@@ -1,11 +1,12 @@
 from fastapi import FastAPI, HTTPException , UploadFile,File
 from fastapi.middleware.cors import CORSMiddleware
-from Schemas import TextRequest, EmotionResponse , SpeechTextResponse
+from shcemas import TextRequest, EmotionResponse , SpeechTextResponse
 import pandas as pd
-from model.model_loader import load_model
-from model.chatbot import generate_advice
-
-
+from model_loader import load_model
+from chatbot.chatbot import generate_advice
+import speech_recognition as sr
+import shutil
+import os
 
 app = FastAPI(
     title="AI-4 Emotion Detection Service",
@@ -35,43 +36,36 @@ def home():
 def predict_emotion(request: TextRequest):
 
     try:
-        # 1️⃣ Validate empty input
+        # Validate empty input
         if not request.text.strip():
             raise HTTPException(status_code=400, detail="Text cannot be empty")
+        
+        input_df = pd.DataFrame({
+        "Clean_Text": [request.text]
+        })
+        
 
-        # 2️⃣ Load model ONLY ONCE
-        model = load_model()
+        prediction = load_model().predict(input_df)[0]
 
-        # 3️⃣ Get prediction from model
-        result = model(request.text)
-
-        # If using HuggingFace pipeline
-        if isinstance(result, list):
-            emotion_label = result[0]["label"]
-            confidence = float(result[0]["score"])
-
-        # If using sklearn model
+        if hasattr(load_model, "predict_proba"):
+            probabilities = load_model.predict_proba([request.text])[0]
+            confidence = float(max(probabilities))
         else:
-            emotion_label = result
-            if hasattr(model, "predict_proba"):
-                probabilities = model.predict_proba([request.text])[0]
-                confidence = float(max(probabilities))
-            else:
-                confidence = 0.95
+            confidence = 0.95  # fallback
 
-        # 4️⃣ Generate advice using clean emotion label
-        advise = generate_advice(emotion_label, request.text)
-
-        # 5️⃣ Return CLEAN response (NO str())
+        advise = generate_advice(prediction,request.text)
+        
         return EmotionResponse(
-            emotion=emotion_label,
+            emotion=str(prediction),
             confidence=round(confidence, 4),
-            suggestion=advise
+            suggestion=str(advise)
+            
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+    
+    
 import speech_recognition as sr
 
 @app.get("/live-mic")

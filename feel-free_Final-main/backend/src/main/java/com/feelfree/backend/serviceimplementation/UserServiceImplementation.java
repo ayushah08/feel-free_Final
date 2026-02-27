@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -55,12 +56,32 @@ public class UserServiceImplementation implements UserService {
                 .build();
     }
 
-    public void updateStreak(User user){
+
+
+    public void updateStreak(User user) {
 
         LocalDate today = LocalDate.now();
         LocalDate lastDate = user.getLastActivityDate();
 
-        if(lastDate)
+        if (lastDate == null) {
+            user.setCurrentStreak(1);
+
+        } else if (lastDate.equals(today)) {
+            return; // Already counted today
+
+        } else if (lastDate.plusDays(1).equals(today)) {
+            user.setCurrentStreak(user.getCurrentStreak() + 1);
+
+        } else {
+            user.setCurrentStreak(1);
+        }
+
+        if (user.getCurrentStreak() > user.getLongestStreak()) {
+            user.setLongestStreak(user.getCurrentStreak());
+        }
+
+        user.setLastActivityDate(today);
+
     }
 
 }

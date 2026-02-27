@@ -84,4 +84,11 @@ public class UserServiceImplementation implements UserService {
 
     }
 
+    @Override
+    public UserResponseDTO getByUsername(String username) {
+        User user = userRepository.findByUserName(username).orElseThrow(()->new RuntimeException("User not found"));
+
+        return mapToDTO(user);
+    }
+
 }

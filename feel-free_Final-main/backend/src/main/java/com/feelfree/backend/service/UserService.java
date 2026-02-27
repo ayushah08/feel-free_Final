@@ -14,6 +14,10 @@ public interface UserService {
         List<UserResponseDTO> getAllUsers();
 
         UserResponseDTO getUserById(Long id);
+
+         void updateStreak(User user);
+    UserResponseDTO getByUsername(String username);
+
     }
 
 

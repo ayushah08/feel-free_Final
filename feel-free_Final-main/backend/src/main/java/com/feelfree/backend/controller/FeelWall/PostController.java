@@ -13,6 +13,7 @@ import com.feelfree.backend.repository.FeelFree.PostCommentRepository;
 import com.feelfree.backend.repository.FeelFree.PostReactionRepository;
 import com.feelfree.backend.repository.FeelFree.PostRepository;
 import com.feelfree.backend.repository.UserRepository;
+import com.feelfree.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 public class PostController {
 
     private final PostRepository postRepository;
+    private final UserService userService;
     private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
     private final PostReactionRepository reactionRepository;
@@ -50,7 +52,12 @@ public class PostController {
                 .user(user)
                 .build();
 
-        return postRepository.save(post);
+        postRepository.save(post);
+
+        userService.updateStreak(user);
+        userRepository.save(user);
+
+        return post;
     }
 
     @GetMapping

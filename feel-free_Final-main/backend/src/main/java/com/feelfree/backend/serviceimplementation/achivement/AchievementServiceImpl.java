@@ -1,5 +1,6 @@
 package com.feelfree.backend.serviceimplementation.achivement;
 
+import com.feelfree.backend.dto.Achivement.AchievementDTO;
 import com.feelfree.backend.dto.Achivement.AchievementResponseDTO;
 import com.feelfree.backend.dto.Achivement.AchievementSummaryDTO;
 import com.feelfree.backend.dto.profile.ProfileSummaryResponse;
@@ -8,6 +9,9 @@ import com.feelfree.backend.entity.Achivement.UserAchievement;
 import com.feelfree.backend.entity.User;
 import com.feelfree.backend.repository.Achivement.AchievementRepository;
 import com.feelfree.backend.repository.Achivement.UserAchivementRepository;
+import com.feelfree.backend.repository.FeelFree.PostCommentRepository;
+import com.feelfree.backend.repository.FeelFree.PostReactionRepository;
+import com.feelfree.backend.repository.FeelFree.PostRepository;
 import com.feelfree.backend.repository.Mood.MoodRepository;
 import com.feelfree.backend.repository.UserRepository;
 import com.feelfree.backend.service.achivement.AchievementService;
@@ -26,6 +30,9 @@ public class AchievementServiceImpl implements AchievementService {
     private final UserAchivementRepository userAchievementRepository;
     private final MoodRepository moodRepository;
     private final UserRepository userRepository;
+    private final PostCommentRepository commentRepository;
+    private final PostReactionRepository reactionRepository;
+    private final PostRepository postRepository;
 
     @Override
     public void checkAndUnlockAchievements(User user) {
@@ -148,5 +155,62 @@ public class AchievementServiceImpl implements AchievementService {
         return
                 ProfileSummaryResponse.builder().longestStreak(user.getLongestStreak()).currentStreak(user.getCurrentStreak()).totalAchievements(totalAchievements).overallProgressPercentage(progress).build();
 
+    }
+
+       @Override
+    public List<AchievementDTO> getAchievement(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        long postCount = postRepository.countByUserId(userId);
+        long commentCount = commentRepository.countByUserId(userId);
+        long reactionsGiven = reactionRepository.countByUserId(userId);
+        long reactionsReceived = reactionRepository.countReactionsReceived(userId);
+
+        return List.of(
+
+                AchievementDTO.builder()
+                        .title("First Post")
+                        .description("Created your first post")
+                        .unlocked(postCount >= 1)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("3 Day Streak")
+                        .description("Maintained 3 day streak")
+                        .unlocked(user.getCurrentStreak() >= 3)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("7 Day Streak")
+                        .description("Maintained 7 day streak")
+                        .unlocked(user.getCurrentStreak() >= 7)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("5 Comments Given")
+                        .description("Posted 5 comments")
+                        .unlocked(commentCount >= 5)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("10 Reactions Given")
+                        .description("Reacted to 10 posts")
+                        .unlocked(reactionsGiven >= 10)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("10 Reactions Received")
+                        .description("Received 10 reactions")
+                        .unlocked(reactionsReceived >= 10)
+                        .build(),
+
+                AchievementDTO.builder()
+                        .title("30 Day Streak")
+                        .description("Maintained 30 day streak")
+                        .unlocked(user.getCurrentStreak() >= 30)
+                        .build()
+        );
     }
 }

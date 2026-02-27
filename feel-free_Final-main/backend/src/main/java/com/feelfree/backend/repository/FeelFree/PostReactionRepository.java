@@ -13,4 +13,8 @@ public interface PostReactionRepository extends JpaRepository<PostReaction
     long countByPostIdAndReactionType(Long postId , ReactionType reactionType);
 
     boolean existsByPostIdAndUserId(Long postId , Long userId);
+
+    long countByUserId(Long userId);
+
+    long countReactionsReceived(Long userId);
 }

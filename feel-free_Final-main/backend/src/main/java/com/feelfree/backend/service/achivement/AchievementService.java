@@ -1,5 +1,6 @@
 package com.feelfree.backend.service.achivement;
 
+import com.feelfree.backend.dto.Achivement.AchievementDTO;
 import com.feelfree.backend.dto.Achivement.AchievementResponseDTO;
 import com.feelfree.backend.dto.Achivement.AchievementSummaryDTO;
 import com.feelfree.backend.dto.profile.ProfileSummaryResponse;
@@ -26,4 +27,5 @@ public interface AchievementService {
 
     ProfileSummaryResponse getProfileSummary(Long userId);
 
+    List<AchievementDTO> getAchievement(Long userId);
 }

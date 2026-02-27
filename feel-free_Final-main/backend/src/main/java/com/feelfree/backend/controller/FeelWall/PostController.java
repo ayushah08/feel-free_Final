@@ -1,6 +1,8 @@
 package com.feelfree.backend.controller.FeelWall;
 
 
+import com.feelfree.backend.dto.Achivement.AchievementDTO;
+import com.feelfree.backend.dto.Achivement.AchievementResponseDTO;
 import com.feelfree.backend.dto.FeelFree.CommentResponseDTO;
 import com.feelfree.backend.dto.FeelFree.CreatePostRequest;
 import com.feelfree.backend.dto.FeelFree.PostResponseDTO;
@@ -14,6 +16,7 @@ import com.feelfree.backend.repository.FeelFree.PostReactionRepository;
 import com.feelfree.backend.repository.FeelFree.PostRepository;
 import com.feelfree.backend.repository.UserRepository;
 import com.feelfree.backend.service.UserService;
+import com.feelfree.backend.service.achivement.AchievementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +32,7 @@ import static java.util.stream.Collectors.toList;
 public class PostController {
 
     private final PostRepository postRepository;
+    private final AchievementService achievementService;
     private final UserService userService;
     private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
@@ -181,5 +185,10 @@ public class PostController {
                         .createdAt(comment.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    @GetMapping("/{userId}/achievements")
+    public List<AchievementDTO> getAchievements(@PathVariable Long userId) {
+        return achievementService.getAchievement(userId);
     }
 }

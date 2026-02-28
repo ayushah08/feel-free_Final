@@ -82,3 +82,40 @@ def live_microphone():
         return {"detected_text": text}
     except:
         return {"error": "Could not understand audio"}
+    
+    
+@app.post("/voice-chat")
+def voice_chat():
+
+    recognizer = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        print("🎤 Speak now...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    try:
+        # Convert speech to text
+        user_text = recognizer.recognize_google(audio)
+        print("User said:", user_text)
+
+        # Create ChatGPT-style prompt
+        
+        input_df = pd.DataFrame({
+        "Clean_Text": [user_text]
+        })
+
+        prediction = load_model().predict(input_df)[0]
+
+        advise = generate_advice(prediction,user_text)
+
+        return {
+            "user_text": user_text,
+            "ai_response": advise
+        }
+
+    except sr.UnknownValueError:
+        return {"error": "Could not understand audio"}
+
+    except sr.RequestError:
+        return {"error": "Speech recognition service unavailable"}
